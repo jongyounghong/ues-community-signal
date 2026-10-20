@@ -9,6 +9,10 @@ Reddit data and derivatives
 are not sold, licensed, shared, redistributed, monetized, or used for an
 employer, client, or third party.
 
+This scope was submitted before the October 31, 2026 cutoff for new public
+Data API requests. It does not assume that a public OAuth approval, if granted,
+would continue beyond Reddit's announced March 2027 public API sunset.
+
 ## Requested reads
 
 - Recent public submissions from the approved community allowlist.

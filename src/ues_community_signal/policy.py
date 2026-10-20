@@ -8,6 +8,7 @@ module never attempts to infer or bypass it.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 import re
 from typing import Mapping
 
@@ -24,6 +25,7 @@ APPROVED_COMMUNITIES = (
 USER_AGENT_RE = re.compile(
     r"^[^:\s()]+:[^:\s()]+:[^\s()]+ \(by /u/[A-Za-z0-9_-]+\)$"
 )
+CONSERVATIVE_PUBLIC_API_FAIL_CLOSED_DATE = date(2027, 3, 1)
 
 
 class AccessNotApproved(RuntimeError):
@@ -55,11 +57,31 @@ class AccessPolicy:
             raise ValueError("initial Narrative/Information cap cannot exceed 5%")
 
 
-def require_approved_runtime(environment: Mapping[str, str]) -> None:
-    """Fail closed unless approval and minimum OAuth metadata are explicit."""
+def require_approved_runtime(
+    environment: Mapping[str, str],
+    *,
+    today: date | None = None,
+) -> None:
+    """Fail closed unless transitional approval and OAuth metadata are explicit.
+
+    Reddit announced only the month of the final public API shutdown. This
+    scaffold conservatively refuses the legacy path from March 1, 2027 unless
+    the operator records a written exception. Devvit uses a separate runtime.
+    """
 
     if environment.get("REDDIT_API_ACCESS_APPROVED", "").strip().lower() != "yes":
         raise AccessNotApproved("explicit Reddit API approval has not been recorded")
+    access_path = environment.get("REDDIT_ACCESS_PATH", "").strip().lower()
+    if access_path not in {"approved_transitional_public_api", "written_legacy_exception"}:
+        raise AccessNotApproved("an explicit approved access path is required")
+    current_date = today or date.today()
+    if (
+        current_date >= CONSERVATIVE_PUBLIC_API_FAIL_CLOSED_DATE
+        and access_path != "written_legacy_exception"
+    ):
+        raise AccessNotApproved(
+            "legacy public API access is fail-closed from March 2027 without a written exception"
+        )
     if not environment.get("REDDIT_CLIENT_ID", "").strip():
         raise AccessNotApproved("REDDIT_CLIENT_ID is missing")
     user_agent = environment.get("REDDIT_USER_AGENT", "").strip()

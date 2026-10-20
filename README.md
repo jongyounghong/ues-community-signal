@@ -15,6 +15,13 @@ Reddit has not endorsed this application. API access remains disabled unless
 and until Reddit explicitly approves this stated use case. The application does
 not place trades and is not financial advice.
 
+A Data API request was submitted on October 19, 2026, before Reddit's announced
+October 31 cutoff for new public API requests. Reddit also announced that
+remaining public Data API access ends in March 2027. Therefore legacy OAuth is
+not treated as a durable data source even if the pending request is approved.
+The long-term path must be Devvit, or an explicit written exception from Reddit.
+See [`PLATFORM_TRANSITION.md`](PLATFORM_TRANSITION.md).
+
 ## Proposed scope
 
 - One approved OAuth client and a truthful, unique User-Agent.
